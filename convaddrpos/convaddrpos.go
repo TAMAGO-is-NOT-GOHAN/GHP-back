@@ -1,4 +1,4 @@
-package ConvAddressPos
+package convaddrpos
 
 import (
 	"context"
@@ -8,7 +8,8 @@ import (
 	"googlemaps.github.io/maps"
 )
 
-func ConvAddressToPos(address string) Coordinate {
+// ConvAddrToPos ...
+func ConvAddrToPos(address string) Coordinate {
 	c, err := maps.NewClient(maps.WithAPIKey(os.Getenv("GMAP_TOKEN")))
 	if err != nil {
 		log.Fatal(err)

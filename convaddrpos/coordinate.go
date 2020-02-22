@@ -1,5 +1,6 @@
-package ConvAddressPos
+package convaddrpos
 
+// Coordinate ...
 type Coordinate struct {
 	Address   string  `json:"address"`
 	Latitude  float64 `json:"latitude"`
