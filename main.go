@@ -45,6 +45,7 @@ func GetEvent(r *gin.Engine, app *firebase.App) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer client.Close()
 
 	r.GET("/v1/event", func(c *gin.Context) {
 		iter := client.Collection(c.Query("event_id")).Documents(ctx)
@@ -72,8 +73,34 @@ func GetEvent(r *gin.Engine, app *firebase.App) {
 	})
 }
 
-func PostEvent(r *gin.Engine) {
+func PostEvent(r *gin.Engine, app *firebase.App) {
+	ctx := context.Background()
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
 
+	var eventData event.Event
+
+	r.POST("/v1/event", func(c *gin.Context) {
+		c.BindJSON(&eventData)
+
+		eventID := string(eventData.ID)
+
+		_, _, err := client.Collection(eventID).Add(ctx, map[string]interface{}{
+			"ID":          eventData.ID,
+			"Date":        eventData.Date,
+			"Name":        eventData.Name,
+			"MaxPeople":   eventData.MaxPeople,
+			"Description": eventData.Description,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		c.JSON(http.StatusOK, `{"status": "ok"}`)
+	})
 }
 
 func PutEvent(r *gin.Engine) {
