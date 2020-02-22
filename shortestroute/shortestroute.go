@@ -11,7 +11,7 @@ import (
 func SearchShortestRoute(origin string, destination string) int {
 	c, err := maps.NewClient(maps.WithAPIKey(os.Getenv("GMAP_TOKEN")))
 	if err != nil {
-		log.Fatalf("fatal error: %s", err)
+		log.Fatal(err)
 	}
 	r := &maps.DirectionsRequest{
 		Origin:      origin,
@@ -19,7 +19,7 @@ func SearchShortestRoute(origin string, destination string) int {
 	}
 	route, _, err := c.Directions(context.Background(), r)
 	if err != nil {
-		log.Fatalf("fatal error: %s", err)
+		log.Fatal(err)
 	}
 
 	return int(route[0].Legs[0].Duration.Minutes())
