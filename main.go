@@ -8,12 +8,17 @@ import (
 
 	firebase "firebase.google.com/go"
 	"github.com/TAMAGO-is-NOT-GOHAN/GHP-back/event"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/iterator"
 )
 
 func main() {
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"https://ghp.itok01.com/"},
+	}))
 
 	ctx := context.Background()
 	conf := &firebase.Config{ProjectID: "tng-ghp-ok"}
@@ -29,6 +34,17 @@ func main() {
 	defer client.Close()
 
 	Test(router)
+	GetEvent(router, app)
+	PostEvent(router, app)
+	PostEventJoin(router, app)
+	GetEventNgDate(router, app)
+	PostEventJoin(router, app)
+	GetEventDeparture(router)
+	GetEventRoute(router)
+	PostEventArrival(router)
+	GetEventArrivalRank(router)
+	GetUserLocation(router)
+	PostUserLocation(router)
 
 	router.Run()
 }
