@@ -8,3 +8,7 @@ type Event struct {
 	MaxPeople   uint32 `json:"max_people"`
 	Description string `json:"description"`
 }
+
+type NG struct {
+	Date uint32 `json:"date"`
+}

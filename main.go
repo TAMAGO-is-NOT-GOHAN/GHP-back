@@ -103,21 +103,63 @@ func PostEvent(r *gin.Engine, app *firebase.App) {
 	})
 }
 
-func PutEvent(r *gin.Engine) {
+func PostEventJoin(r *gin.Engine, app *firebase.App) {
+	ctx := context.Background()
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
 
+	type EventID struct {
+		EventID uint32 `json:"event_id"`
+	}
+
+	r.POST("/v1/event/join", func(c *gin.Context) {
+		var tmp EventID
+		user := c.Query("user")
+		c.BindJSON(&tmp)
+
+		_, _, err := client.Collection(user).Add(ctx, map[string]interface{}{
+			"ID": tmp.EventID,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		c.JSON(http.StatusOK, `{"status": "ok"}`)
+	})
 }
 
-func PostEventJoin(r *gin.Engine) {
+func GetEventNgDate(r *gin.Engine, app *firebase.App) {
+	ctx := context.Background()
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
 
-}
+	var ng []event.NG
 
-func GetEventNgDate(r *gin.Engine) {
 	r.GET("/v1/event/ngdate", func(c *gin.Context) {
-		var eventData event.Event
-		eventID, _ := strconv.Atoi(c.Query("event_id"))
-		eventData.ID = uint32(eventID)
+		iter := client.Collection(c.Query("ng")).Documents(ctx)
 
-		c.JSON(http.StatusOK, eventData)
+		for {
+			doc, err := iter.Next()
+			if err != nil {
+				log.Fatal(err)
+			}
+			if err == iterator.Done {
+				break
+			}
+
+			var tmp event.NG
+
+			doc.DataTo(&tmp)
+			ng = append(ng, tmp)
+		}
+
+		c.JSON(http.StatusOK, ng)
 	})
 }
 
@@ -170,5 +212,9 @@ func GetUserLocation(r *gin.Engine) {
 }
 
 func PostUserLocation(r *gin.Engine) {
+
+}
+
+func PutEvent(r *gin.Engine) {
 
 }
