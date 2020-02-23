@@ -109,8 +109,10 @@ func PostEvent(r *gin.Engine, app *firebase.App) {
 			log.Fatal(err)
 		}
 
+		uuidUI := u.String()
+
 		_, _, err = client.Collection(eventID).Add(ctx, map[string]interface{}{
-			"ID":          u.String(),
+			"ID":          uuidUI,
 			"Date":        eventData.Date,
 			"Name":        eventData.Name,
 			"MaxPeople":   eventData.MaxPeople,
@@ -120,7 +122,7 @@ func PostEvent(r *gin.Engine, app *firebase.App) {
 			log.Fatal(err)
 		}
 
-		c.JSON(http.StatusOK, `{"status": "ok"}`)
+		c.JSON(http.StatusOK, `{"event_id":"`+uuidUI+`"}`)
 	})
 }
 
