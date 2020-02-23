@@ -210,7 +210,14 @@ func GetEventRoute(r *gin.Engine) {
 }
 
 func PostEventArrival(r *gin.Engine) {
-
+	type EventID struct {
+		EventID uint32 `json:"event_id"`
+	}
+	r.POST("/v1/event/departure", func(c *gin.Context) {
+		var tmp EventID
+		c.BindJSON(&tmp)
+		c.JSON(http.StatusOK, tmp)
+	})
 }
 
 func GetEventArrivalRank(r *gin.Engine) {
@@ -234,6 +241,13 @@ func GetUserLocation(r *gin.Engine) {
 }
 
 func PostUserLocation(r *gin.Engine) {
+	r.GET("/v1/user/location", func(c *gin.Context) {
+		user, _ := strconv.Atoi(c.Query("user"))
+
+		c.JSON(http.StatusOK, gin.H{
+			"user": user,
+		})
+	})
 
 }
 
