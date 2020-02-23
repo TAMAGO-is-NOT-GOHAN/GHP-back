@@ -10,11 +10,17 @@ type Event struct {
 	Coors       []Coordinate `json:"coordinate"`
 }
 
+type User struct {
+	Event_id string `json:"event_id"`
+	User     string `json:"user"`
+}
+
 type NG struct {
 	Date uint32 `json:"date"`
 }
 
 type Coordinate struct {
+	User      string  `json:"user"`
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
 }
