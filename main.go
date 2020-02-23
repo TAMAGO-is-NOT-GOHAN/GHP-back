@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"strconv"
 
 	firebase "firebase.google.com/go"
 	"github.com/TAMAGO-is-NOT-GOHAN/GHP-back/event"
@@ -44,8 +43,8 @@ func main() {
 	GetEventRoute(router)
 	PostEventArrival(router)
 	GetEventArrivalRank(router)
-	GetUserLocation(router)
-	PostUserLocation(router)
+	GetUserLocation(router, app)
+	PostUserLocation(router, app)
 
 	router.Run()
 }
@@ -71,15 +70,12 @@ func GetEvent(r *gin.Engine, app *firebase.App) {
 
 		for {
 			doc, err := iter.Next()
-			if err != nil {
-				log.Fatal(err)
-			}
 
 			if err == iterator.Done {
 				break
 			}
 			if err != nil {
-				return
+				log.Fatal(err)
 			}
 
 			doc.DataTo(&eventData)
@@ -169,11 +165,11 @@ func GetEventNgDate(r *gin.Engine, app *firebase.App) {
 
 		for {
 			doc, err := iter.Next()
-			if err != nil {
-				log.Fatal(err)
-			}
 			if err == iterator.Done {
 				break
+			}
+			if err != nil {
+				log.Fatal(err)
 			}
 
 			var tmp event.NG
@@ -250,25 +246,63 @@ func GetEventArrivalRank(r *gin.Engine) {
 	})
 }
 
-func GetUserLocation(r *gin.Engine) {
-	r.GET("/v1/user/location", func(c *gin.Context) {
-		user, _ := strconv.Atoi(c.Query("user"))
+func GetUserLocation(r *gin.Engine, app *firebase.App) {
+	ctx := context.Background()
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
 
-		c.JSON(http.StatusOK, gin.H{
-			"user": user,
-		})
+	var coors []event.Coordinate
+
+	r.GET("/v1/user/location", func(c *gin.Context) {
+		iter := client.Collection("coor").Documents(ctx)
+
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return
+			}
+
+			var tmp event.Coordinate
+
+			doc.DataTo(&tmp)
+
+			coors = append(coors, tmp)
+		}
+
+		c.JSON(http.StatusOK, coors)
 	})
 }
 
-func PostUserLocation(r *gin.Engine) {
-	r.GET("/v1/user/location", func(c *gin.Context) {
-		user, _ := strconv.Atoi(c.Query("user"))
+func PostUserLocation(r *gin.Engine, app *firebase.App) {
+	ctx := context.Background()
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
 
-		c.JSON(http.StatusOK, gin.H{
-			"user": user,
+	var coor event.Coordinate
+
+	r.POST("/v1/user/location", func(c *gin.Context) {
+		c.BindJSON(&coor)
+
+		_, err := client.Collection("coor").Doc(coor.User).Set(ctx, map[string]interface{}{
+			"latitude":  coor.Latitude,
+			"longitude": coor.Longitude,
 		})
-	})
 
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		c.JSON(http.StatusOK, `{"status":"ok"}`)
+	})
 }
 
 func PutEvent(r *gin.Engine) {
