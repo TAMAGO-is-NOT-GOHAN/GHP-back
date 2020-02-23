@@ -10,6 +10,7 @@ import (
 	"github.com/TAMAGO-is-NOT-GOHAN/GHP-back/event"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"google.golang.org/api/iterator"
 )
 
@@ -66,8 +67,7 @@ func GetEvent(r *gin.Engine, app *firebase.App) {
 	r.GET("/v1/event", func(c *gin.Context) {
 		iter := client.Collection(c.Query("event_id")).Documents(ctx)
 		var eventData event.Event
-		eventID, _ := strconv.Atoi(c.Query("event_id"))
-		eventData.ID = uint32(eventID)
+		eventData.ID = c.Query("event_id")
 
 		for {
 			doc, err := iter.Next()
@@ -104,8 +104,13 @@ func PostEvent(r *gin.Engine, app *firebase.App) {
 
 		eventID := string(eventData.ID)
 
-		_, _, err := client.Collection(eventID).Add(ctx, map[string]interface{}{
-			"ID":          eventData.ID,
+		u, err := uuid.NewRandom()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, _, err = client.Collection(eventID).Add(ctx, map[string]interface{}{
+			"ID":          u.String(),
 			"Date":        eventData.Date,
 			"Name":        eventData.Name,
 			"MaxPeople":   eventData.MaxPeople,
@@ -128,7 +133,7 @@ func PostEventJoin(r *gin.Engine, app *firebase.App) {
 	defer client.Close()
 
 	type EventID struct {
-		EventID uint32 `json:"event_id"`
+		EventID string `json:"event_id"`
 	}
 
 	r.POST("/v1/event/join", func(c *gin.Context) {
@@ -208,8 +213,7 @@ func PostEventNgDate(r *gin.Engine, app *firebase.App) {
 func GetEventDeparture(r *gin.Engine) {
 	r.GET("/v1/event/departure", func(c *gin.Context) {
 		var eventData event.Event
-		eventID, _ := strconv.Atoi(c.Query("event_id"))
-		eventData.ID = uint32(eventID)
+		eventData.ID = c.Query("event_id")
 
 		c.JSON(http.StatusOK, eventData)
 	})
@@ -218,8 +222,7 @@ func GetEventDeparture(r *gin.Engine) {
 func GetEventRoute(r *gin.Engine) {
 	r.GET("/v1/event/route", func(c *gin.Context) {
 		var eventData event.Event
-		eventID, _ := strconv.Atoi(c.Query("event_id"))
-		eventData.ID = uint32(eventID)
+		eventData.ID = c.Query("event_id")
 
 		c.JSON(http.StatusOK, eventData)
 	})
@@ -227,7 +230,7 @@ func GetEventRoute(r *gin.Engine) {
 
 func PostEventArrival(r *gin.Engine) {
 	type EventID struct {
-		EventID uint32 `json:"event_id"`
+		EventID string `json:"event_id"`
 	}
 	r.POST("/v1/event/departure", func(c *gin.Context) {
 		var tmp EventID
@@ -239,8 +242,7 @@ func PostEventArrival(r *gin.Engine) {
 func GetEventArrivalRank(r *gin.Engine) {
 	r.GET("/v1/event/arrival/rank", func(c *gin.Context) {
 		var eventData event.Event
-		eventID, _ := strconv.Atoi(c.Query("event_id"))
-		eventData.ID = uint32(eventID)
+		eventData.ID = c.Query("event_id")
 
 		c.JSON(http.StatusOK, eventData)
 	})
