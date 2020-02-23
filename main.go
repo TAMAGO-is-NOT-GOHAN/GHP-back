@@ -16,9 +16,9 @@ import (
 func main() {
 	router := gin.Default()
 
-	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"https://ghp.itok01.com/*"},
-	}))
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"https://ghp.itok01.com/*"}
+	router.Use(cors.New(config))
 
 	ctx := context.Background()
 	conf := &firebase.Config{ProjectID: "tng-ghp-ok"}
