@@ -17,7 +17,7 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"https://ghp.itok01.com/"},
+		AllowOrigins: []string{"https://ghp.itok01.com/*"},
 	}))
 
 	ctx := context.Background()
