@@ -142,7 +142,7 @@ func GetEventNgDate(r *gin.Engine, app *firebase.App) {
 	var ng []event.NG
 
 	r.GET("/v1/event/ngdate", func(c *gin.Context) {
-		iter := client.Collection(c.Query("ng")).Documents(ctx)
+		iter := client.Collection("ng").Documents(ctx)
 
 		for {
 			doc, err := iter.Next()
@@ -163,8 +163,30 @@ func GetEventNgDate(r *gin.Engine, app *firebase.App) {
 	})
 }
 
-func PostEventNgDate(r *gin.Engine) {
+func PostEventNgDate(r *gin.Engine, app *firebase.App) {
+	ctx := context.Background()
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
 
+	var ng []event.NG
+
+	r.POST("/v1/event/ngdate", func(c *gin.Context) {
+		c.BindJSON(&ng)
+
+		for _, e := range ng {
+			_, _, err := client.Collection("ng").Add(ctx, map[string]interface{}{
+				"date": e,
+			})
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		c.JSON(http.StatusOK, `{"status": "ok"}`)
+	})
 }
 
 func GetEventDeparture(r *gin.Engine) {
