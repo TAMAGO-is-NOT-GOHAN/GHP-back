@@ -81,6 +81,29 @@ func GetEvent(r *gin.Engine, app *firebase.App) {
 			doc.DataTo(&eventData)
 		}
 
+		iter = client.Collection("coor").Documents(ctx)
+
+		var coors []event.Coordinate
+
+		for {
+			doc, err := iter.Next()
+
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			var tmp event.Coordinate
+
+			doc.DataTo(&tmp)
+
+			coors = append(coors, tmp)
+		}
+
+		eventData.Coors = coors
+
 		c.JSON(http.StatusOK, eventData)
 	})
 }
@@ -293,6 +316,7 @@ func PostUserLocation(r *gin.Engine, app *firebase.App) {
 		c.BindJSON(&coor)
 
 		_, err := client.Collection("coor").Doc(coor.User).Set(ctx, map[string]interface{}{
+			"user":      coor.User,
 			"latitude":  coor.Latitude,
 			"longitude": coor.Longitude,
 		})
